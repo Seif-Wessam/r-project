@@ -1,4 +1,4 @@
-setwd("C:/Users/fanny/Desktop/stats R/project")
+#setwd("C:/Users/fanny/Desktop/stats R/project")
 
 #load useful libraries
 library (ade4)
@@ -38,7 +38,7 @@ env <- env %>%
 #DATA RESEMBLANCE
 
 ##Q-mode dissimilarity and distance measures for species
-#pq pas le garder, à modifier pour rendre + lisible
+#pq pas le garder, ? modifier pour rendre + lisible
 #modification of image() to include row and column axis labels and to construct a heatmap of species
 par(mfrow=c(1,1))
 image(as.matrix(spe)) #original
@@ -274,18 +274,62 @@ Nb.complete
 plot(3:20,Nb.complete$All.index, xlab="number of clusters", ylab="Calinski and Harabasz index", main="Optimal number of clusters")
 #abline(v=2, col="red", lty=2)
 
-#plot the dendrogram with these 4 optimal cluster in evidence
+#plot the dendrogram with these 3 optimal cluster in evidence
 library(dendextend)
 complete.dend <- as.dendrogram(traits.ch.ward)
 colors_to_use <- Nb.complete$Best.partition
 colors_to_use<-colors_to_use[order.dendrogram(complete.dend)]
 labels_colors(complete.dend)<-1
-complete.dend <- complete.dend %>% color_branches(k = 9)
-plot(complete.dend, main="Complete linkage with 4 clusters")
+complete.dend <- complete.dend %>% color_branches(k = 3)
+plot(complete.dend, main="Complete linkage with 3 clusters")
+
+# Get the cluster-color mapping
+cluster_colors <- get_leaves_branches_col(complete.dend)
+print(cluster_colors)
+
+'''# Print the cluster-color mapping
+cat("Cluster-Color Mapping:\n")
+for (cluster in unique(colors_to_use)) {
+  color <- cluster_colors[cluster]
+  cat("Cluster", cluster, ":", color, "\n")
+}'''
+
+
+'''library(dendextend)
+
+complete.dend <- as.dendrogram(traits.ch.ward)
+colors_to_use <- Nb.complete$Best.partition
+colors_to_use <- colors_to_use[order.dendrogram(complete.dend)]
+labels_colors(complete.dend) <- 1
+complete.dend <- complete.dend %>% color_branches(k = 3)
+plot(complete.dend, main = "Complete linkage with 3 clusters")
+
+# Get the cluster assignments
+clusters <- cutree(complete.dend, k = 3)
+
+# Get the unique colors assigned to leaves
+leaf_colors <- get_leaves_branches_col(complete.dend)
+
+# Create a mapping between cluster and color
+cluster_color_mapping <- setNames(leaf_colors, unique(clusters))
+print(cluster_color_mapping)
+# Print the cluster-color mapping
+cat("Cluster-Color Mapping:\n")
+for (cluster in unique(colors_to_use)) {
+  color <- cluster_color_mapping[[as.character(cluster)]]
+  cat("Cluster", cluster, ":", color, "\n")
+}'''
+
+
 
 #SUPERVISED CLASSIF
 traits.cw.g <- cutree(traits.ch.ward, 3)
 traits.cw.g
+
+# Display the cluster assignments using cat
+cat("Cluster assignments:", traits.cw.g, "\n")
+
+
 spe.transpose <- t(spe)
 D<-cbind(traits.cw.g, spe.transpose, traits)
 #class.groups=ctree(as.factor(traits.cw.g)~ Height+Spread+Angle+Area+Thick+SLA+N_mass+Seed, data = D)
@@ -313,3 +357,38 @@ spe.nmds <- metaMDS(spe, distance = "bray")
 spe.nmds
 spe.nmds$stress
 plot(spe.nmds, type = "t",main = paste("NMDS Bray Curtis; Stress =",round(spe.nmds$stress, 3)))
+
+
+
+
+
+
+
+
+
+
+# Example colored dendrogram
+library(dendextend)
+
+# Create a dendrogram
+dend <- as.dendrogram(hclust(dist(USArrests), "ave"))
+
+# Cut the dendrogram into clusters
+clusters <- cutree(dend, k = 3)
+
+# Assign colors to clusters (replace these with your actual color palette)
+cluster_colors <- c("red", "blue", "green")
+
+# Color the dendrogram based on clusters
+dend_colored <- dend %>% set("labels_colors", cluster_colors[clusters])
+
+# Get the cluster-color mapping
+cluster_color_mapping <- attributes(dend_colored)$labels_colors
+
+# Print the cluster-color mapping
+cat("Cluster-Color Mapping:\n")
+for (cluster in unique(clusters)) {
+  color <- cluster_color_mapping[[as.character(cluster)]]
+  cat("Cluster", cluster, ":", color, "\n")
+}
+
